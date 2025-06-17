@@ -1,0 +1,10 @@
+sonar.projectKey=Yusuf-Git-QA_simple-api-poc
+sonar.organization=yusuf-git-qa  # For SonarCloud
+sonar.host.url=https://sonarcloud.io
+sonar.login=${{ secrets.SONAR_TOKEN }}
+
+sonar.projectName=simple-api-poc
+sonar.language=cs
+sonar.sources=.
+sonar.cs.opencover.reportsPaths=coverage.opencover.xml
+sonar.exclusions=**/wwwroot/**,**/node_modules/**,**/*.dll,**/*.exe
