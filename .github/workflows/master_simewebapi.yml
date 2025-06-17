@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read # Required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -20,14 +20,17 @@ jobs:
         with:
           dotnet-version: '8.0'
 
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      - name: Install SonarScanner for .NET
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+        shell: bash
+
+      - name: Add .NET tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+        shell: bash
 
       - name: Begin SonarCloud Analysis
-        run: |
-          dotnet sonarscanner begin /k:"Yusuf-Git-QA_simple-api-poc" /o:"yusuf-git-qa " /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-        env:
-          PATH: ${{ env.PATH }}:/home/runner/.dotnet/tools
+        run: dotnet sonarscanner begin /k:"Yusuf-Git-QA_simple-api-poc" /o:"yusuf-git-qa" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
