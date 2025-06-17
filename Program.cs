@@ -62,7 +62,7 @@ public class CustomersController : ControllerBase
 {
     private static List<Customer> customers = new List<Customer>
     {
-        new Customer { CifNumber = "123456", Name = "John Doe", Email = "john.doe@example.com" },
+        new Customer { CifNumber = "123456", Name = "John Doe", Email = "john1.doe@example.com" },
         new Customer { CifNumber = "234567", Name = "Sana shaikh", Email = "Sana.Sana@example.com" },
         new Customer { CifNumber = "345678", Name = "Alice Johnson", Email = "alice.johnson@example.com" },
         new Customer { CifNumber = "112233", Name = "Mohammad Ahmed", Email = "Mohammad.Ahmed@example.com" }
