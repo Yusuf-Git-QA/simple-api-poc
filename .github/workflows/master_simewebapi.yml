@@ -15,31 +15,85 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install jq
+        run: choco install jq -y
+        shell: powershell
+
+      - name: Validate Jira Ticket
+        id: validate-jira
+        env:
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+        run: |
+          echo "🔍 Checking commit message for Jira ticket ID..."
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Extract ticket (e.g. CPG-7)
+          JIRA_ID=$(echo "$COMMIT_MSG" | grep -Eo '[A-Z]{2,}-[0-9]+' | head -n1)
+
+          if [ -z "$JIRA_ID" ]; then
+            echo "❌ No Jira ticket ID found in commit message (e.g., CPG-7)."
+            exit 1
+          fi
+
+          echo "✅ Found Jira ticket ID: $JIRA_ID"
+
+          echo "🌐 Calling Jira API to validate ticket..."
+
+          RESPONSE=$(curl -s -u "$env:JIRA_USER_EMAIL:$env:JIRA_TOKEN" `
+            -H "Accept: application/json" `
+            "$env:JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID")
+
+          ERROR_MSG=$(echo "$RESPONSE" | jq -r '.errorMessages[0]')
+          if [ "$ERROR_MSG" != "null" ]; then
+            echo "❌ Jira API error: $ERROR_MSG"
+            exit 1
+          fi
+
+          STATUS=$(echo "$RESPONSE" | jq -r '.fields.status.name')
+          echo "🎫 Ticket status: $STATUS"
+
+          if [[ "$STATUS" == "Done" || "$STATUS" == "Closed" ]]; then
+            echo "❌ Cannot proceed: Jira ticket is in '$STATUS' status."
+            exit 1
+          fi
+
+          echo "✅ Jira ticket $JIRA_ID is valid and in '$STATUS' state."
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
 
       - name: Install SonarScanner for .NET
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-        shell: bash
+        run: dotnet tool install --global dotnet-sonarscanner
+        shell: pwsh
 
       - name: Add .NET tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-        shell: bash
+        run: echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
 
       - name: Begin SonarCloud Analysis
         run: dotnet sonarscanner begin /k:"Yusuf-Git-QA_simple-api-poc" /o:"yusuf-git-qa" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+        shell: pwsh
+
+      - name: Restore dependencies
+        run: dotnet restore
+        shell: pwsh
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
+        shell: pwsh
 
       - name: End SonarCloud Analysis
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+        shell: pwsh
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        shell: pwsh
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
