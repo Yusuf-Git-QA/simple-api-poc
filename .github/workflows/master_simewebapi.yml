@@ -20,7 +20,7 @@ jobs:
         shell: powershell
 
       - name: Validate Jira Ticket
-        id: validate-jira
+        shell: bash
         env:
           JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
@@ -30,7 +30,6 @@ jobs:
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Commit message: $COMMIT_MSG"
           
-          # Extract ticket (e.g. CPG-7)
           JIRA_ID=$(echo "$COMMIT_MSG" | grep -Eo '[A-Z]{2,}-[0-9]+' | head -n1)
 
           if [ -z "$JIRA_ID" ]; then
@@ -42,9 +41,9 @@ jobs:
 
           echo "🌐 Calling Jira API to validate ticket..."
 
-          RESPONSE=$(curl -s -u "$env:JIRA_USER_EMAIL:$env:JIRA_TOKEN" `
-            -H "Accept: application/json" `
-            "$env:JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID")
+          RESPONSE=$(curl -s -u "$JIRA_USER_EMAIL:$JIRA_TOKEN" \
+            -H "Accept: application/json" \
+            "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID")
 
           ERROR_MSG=$(echo "$RESPONSE" | jq -r '.errorMessages[0]')
           if [ "$ERROR_MSG" != "null" ]; then
