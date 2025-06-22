@@ -79,7 +79,7 @@ jobs:
         shell: pwsh
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore "Simple api poc.sln"
         shell: pwsh
 
       - name: Build with dotnet
