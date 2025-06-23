@@ -65,7 +65,8 @@ public class CustomersController : ControllerBase
         new Customer { CifNumber = "123456", Name = "John Doe", Email = "john.doe@example.com" },
         new Customer { CifNumber = "223344", Name = "Sana shaikh", Email = "Sana.Sana@example.com" },
         new Customer { CifNumber = "334455", Name = "Alice Johnson", Email = "alice.johnson@example.com" },
-        new Customer { CifNumber = "112233", Name = "Mohammad Ahmed", Email = "Mohammad.Ahmed@example.com" }
+        new Customer { CifNumber = "112233", Name = "Mohammad Ahmed", Email = "Mohammad.Ahmed@example.com" },
+        new Customer { CifNumber = "554667", Name = "Waseem Ahmed", Email = "Waseem.Ahmed@example.com" }
     };
 
     [HttpGet("{cif}")]
