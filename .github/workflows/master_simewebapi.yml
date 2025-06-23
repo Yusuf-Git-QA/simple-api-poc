@@ -20,6 +20,7 @@ jobs:
         shell: powershell
 
       - name: Validate Jira Ticket
+        id: validate-jira
         shell: bash
         env:
           JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
@@ -38,9 +39,9 @@ jobs:
           fi
 
           echo "✅ Found Jira ticket ID: $JIRA_ID"
+          echo "jira_id=$JIRA_ID" >> $GITHUB_OUTPUT
 
           echo "🌐 Calling Jira API to validate ticket..."
-
           RESPONSE=$(curl -s -u "$JIRA_USER_EMAIL:$JIRA_TOKEN" \
             -H "Accept: application/json" \
             "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID")
@@ -75,7 +76,13 @@ jobs:
         shell: pwsh
 
       - name: Begin SonarCloud Analysis
-        run: dotnet sonarscanner begin /k:"Yusuf-Git-QA_simple-api-poc" /o:"yusuf-git-qa" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+        run: |
+          dotnet sonarscanner begin `
+            /k:"Yusuf-Git-QA_simple-api-poc" `
+            /o:"yusuf-git-qa" `
+            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
+            /d:sonar.host.url="https://sonarcloud.io" `
+            /d:sonar.analysis.jira_ticket="${{ steps.validate-jira.outputs.jira_id }}"
         shell: pwsh
 
       - name: Restore dependencies
@@ -130,3 +137,4 @@ jobs:
           app-name: 'SimeWebAPI'
           slot-name: 'Production'
           package: .
+          deployment-name: "Deploy-${{ steps.validate-jira.outputs.jira_id }}"
