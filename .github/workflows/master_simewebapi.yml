@@ -40,6 +40,7 @@ jobs:
 
           echo "✅ Found Jira ticket ID: $JIRA_ID"
           echo "jira_id=$JIRA_ID" >> $GITHUB_OUTPUT
+          echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
           echo "🌐 Calling Jira API to validate ticket..."
           RESPONSE=$(curl -s -u "$JIRA_USER_EMAIL:$JIRA_TOKEN" \
@@ -137,4 +138,19 @@ jobs:
           app-name: 'SimeWebAPI'
           slot-name: 'Production'
           package: .
-          deployment-name: "Deploy-${{ steps.validate-jira.outputs.jira_id }}"
+
+      - name: Set custom deployment message with Jira ID
+        env:
+          AZURE_TOKEN: ${{ secrets.AZUREAPPSERVICE_TOKEN }}
+          SUBSCRIPTION_ID: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_635A032F9D6F4680A3F189963E54CA47 }}
+          RESOURCE_GROUP: SimeWebAP_group
+          APP_NAME: simewebapi-e8d5byc6bcercja7
+          JIRA_ID: ${{ needs.build.outputs.jira_id || 'UNKNOWN' }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          echo "🔄 Setting deployment message in Azure..."
+          curl -X POST "https://management.azure.com/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$APP_NAME/deployments/${{ github.sha }}?api-version=2022-03-01" \
+            -H "Authorization: Bearer $AZURE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{ \"properties\": { \"message\": \"$JIRA_ID: $COMMIT_MSG\" } }"
+        shell: bash
