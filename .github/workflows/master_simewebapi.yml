@@ -149,7 +149,7 @@ jobs:
       - name: Set custom deployment message with Jira ID
         env:
           RESOURCE_GROUP: SimeWebAP_group
-          APP_NAME: simewebapi-e8d5byc6bcercja7
+          APP_NAME: SimeWebAPI
           SUBSCRIPTION_ID: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_635A032F9D6F4680A3F189963E54CA47 }}
           JIRA_ID: ${{ needs.build.outputs.jira_id || 'UNKNOWN' }}
           COMMIT_MSG: ${{ github.event.head_commit.message }}
