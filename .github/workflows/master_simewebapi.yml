@@ -19,7 +19,7 @@ jobs:
         run: choco install jq -y
         shell: powershell
 
-      - name: Validate Jira Ticket
+      - name: Validate and Transition Jira Ticket
         id: validate-jira
         shell: bash
         env:
@@ -30,7 +30,7 @@ jobs:
           echo "🔍 Checking commit message for Jira ticket ID..."
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Commit message: $COMMIT_MSG"
-          
+
           JIRA_ID=$(echo "$COMMIT_MSG" | grep -Eo '[A-Z]{2,}-[0-9]+' | head -n1)
 
           if [ -z "$JIRA_ID" ]; then
@@ -42,7 +42,7 @@ jobs:
           echo "jira_id=$JIRA_ID" >> $GITHUB_OUTPUT
           echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
-          echo "🌐 Calling Jira API to validate ticket..."
+          echo "🌐 Fetching Jira issue details..."
           RESPONSE=$(curl -s -u "$JIRA_USER_EMAIL:$JIRA_TOKEN" \
             -H "Accept: application/json" \
             "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID")
@@ -54,14 +54,22 @@ jobs:
           fi
 
           STATUS=$(echo "$RESPONSE" | jq -r '.fields.status.name')
-          echo "🎫 Ticket status: $STATUS"
+          echo "🎫 Ticket current status: $STATUS"
 
           if [[ "$STATUS" == "Done" || "$STATUS" == "Closed" ]]; then
-            echo "❌ Cannot proceed: Jira ticket is in '$STATUS' status."
+            echo "❌ Cannot proceed: Jira ticket is already '$STATUS'."
             exit 1
           fi
 
-          echo "✅ Jira ticket $JIRA_ID is valid and in '$STATUS' state."
+          echo "✅ Jira ticket is valid. Attempting transition to 'Done'..."
+
+          curl -s -X POST \
+            -u "$JIRA_USER_EMAIL:$JIRA_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{ "transition": { "id": "31" } }' \
+            "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ID/transitions"
+
+          echo "✅ Jira ticket $JIRA_ID transitioned to Done (if allowed)."
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
@@ -122,7 +130,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
