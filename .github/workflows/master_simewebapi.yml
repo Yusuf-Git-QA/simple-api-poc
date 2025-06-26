@@ -148,7 +148,7 @@ jobs:
 
       - name: Set custom deployment message with Jira ID
         env:
-          APP_NAME: SimeWebAPI
+          APP_NAME: SimpleWebAPI
           DEPLOY_USER: ${{ secrets.AZURE_DEPLOY_USER }}
           DEPLOY_PASSWORD: ${{ secrets.AZURE_DEPLOY_PASSWORD }}
           JIRA_ID: ${{ needs.build.outputs.jira_id || 'UNKNOWN' }}
