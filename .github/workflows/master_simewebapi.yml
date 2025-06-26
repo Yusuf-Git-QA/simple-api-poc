@@ -1,4 +1,4 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - SimeWebAPI
+name: Build and deploy ASP.Net Core app to Azure Web App
 
 on:
   push:
@@ -148,7 +148,7 @@ jobs:
 
       - name: Set custom deployment message with Jira ID
         env:
-          APP_NAME: SimpleWebAPI
+          APP_NAME: SimeWebAPI
           DEPLOY_USER: ${{ secrets.AZURE_DEPLOY_USER }}
           DEPLOY_PASSWORD: ${{ secrets.AZURE_DEPLOY_PASSWORD }}
           JIRA_ID: ${{ needs.build.outputs.jira_id || 'UNKNOWN' }}
@@ -156,7 +156,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           echo "📦 Sending custom message to Kudu deployment history..."
-          curl -X POST "https://${APP_NAME}.scm.azurewebsites.net/api/deployments" \
+          curl -X POST "https://${APP_NAME}.scm.canadacentral-01.azurewebsites.net/api/deployments" \
             -u "$DEPLOY_USER:$DEPLOY_PASSWORD" \
             -H "Content-Type: application/json" \
             -d '{
