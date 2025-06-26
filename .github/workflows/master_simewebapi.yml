@@ -156,7 +156,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           echo "📦 Sending custom message to Kudu deployment history..."
-          curl -X POST "https://${APP_NAME}.scm.canadacentral-01.azurewebsites.net/api/deployments" \
+          curl -X POST "https://simewebapi-e8d5byc6bcercja7.scm.canadacentral-01.azurewebsites.net/api/deployments" \
             -u "$DEPLOY_USER:$DEPLOY_PASSWORD" \
             -H "Content-Type: application/json" \
             -d '{
