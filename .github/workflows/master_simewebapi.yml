@@ -95,11 +95,11 @@ jobs:
         shell: pwsh
 
       - name: Restore dependencies
-        run: dotnet restore Simple api poc.sln
+        run: dotnet restore "Simple api poc.sln"
         shell: pwsh
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build "Simple api poc.sln" --configuration Release
         shell: pwsh
 
       - name: End SonarCloud Analysis
@@ -107,7 +107,7 @@ jobs:
         shell: pwsh
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish "Simple api poc.sln" -c Release -o "${{env.DOTNET_ROOT}}/myapp"
         shell: pwsh
 
       - name: Upload artifact for deployment job
